@@ -1,6 +1,7 @@
 import undetected_chromedriver as uc
 from selenium.webdriver.common.by import By
 import time
+import os
 
 # Inicializa o Chrome com stealth
 options = uc.ChromeOptions()
@@ -80,6 +81,7 @@ def acionar_raspagem():
                 except Exception:
                     pass
                 janela2.destroy()
+                os._exit(0)  # Encerra todo o processo Python imediatamente
 
             janela2.protocol("WM_DELETE_WINDOW", fechar_janela2)
 
@@ -115,8 +117,12 @@ def acionar_raspagem():
             janela2.focus_force()
             # Mantém a janela aberta até o usuário fechar manualmente
             def fechar_janela2():
+                try:
+                    driver.quit()
+                except Exception:
+                    pass
                 janela2.destroy()
-                root.quit()
+                os._exit(0)  # Encerra todo o processo Python imediatamente
             janela2.protocol("WM_DELETE_WINDOW", fechar_janela2)
             janela2.mainloop()
         except Exception as e:
@@ -130,6 +136,17 @@ def acionar_raspagem():
         print('Informação sobre situação no Simples Nacional não encontrada!')
 
 # Mostra a janela logo no início
+def finalizar_tudo():
+    try:
+        driver.quit()
+    except Exception:
+        pass
+    try:
+        root.quit()
+    except Exception:
+        pass
+    os._exit(0)  # Encerra todo o processo Python imediatamente
+
 root = tk.Tk()
 root.withdraw()
 janela = tk.Toplevel()
@@ -153,8 +170,12 @@ label = tk.Label(
 label.pack(expand=True, fill='both', padx=20, pady=20)
 botao = tk.Button(janela, text='Raspar Dados', font=('Arial', 16, 'bold'), bg='#1976D2', fg='white', command=acionar_raspagem)
 botao.pack(pady=10)
-janela.mainloop()
+janela.protocol("WM_DELETE_WINDOW", finalizar_tudo)
 
-print("Programa finalizado corretamente.")
+try:
+    janela.mainloop()
+finally:
+    finalizar_tudo()
+    print("Programa finalizado corretamente.")
 # Não executar root.mainloop() novamente, pois já foi executado anteriormente e todas as janelas já foram tratadas.
 # O navegador é fechado dentro das funções de callback, garantindo que não fique aberto em caso de erro ou fechamento manual.
